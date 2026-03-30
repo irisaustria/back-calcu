@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import sympy as sp
+import os
 from sympy import Symbol
 from sympy.parsing.sympy_parser import (
     parse_expr,
@@ -340,18 +341,14 @@ def laplace_term_steps(expr):
     coeff, core = expr.as_coeff_Mul()
 
     if coeff != 1:
-        steps.append(
-            f"Aplicamos linealidad y sacamos la constante:"
-        )
+        steps.append("Aplicamos linealidad y sacamos la constante:")
         steps.append(
             f"$\\mathcal{{L}}\\{{{pretty_latex(expr)}\\}} = {pretty_latex(coeff)}\\,\\mathcal{{L}}\\{{{pretty_latex(core)}\\}}$."
         )
         inner_steps, inner_result = laplace_term_steps(core)
         steps.extend(inner_steps)
         result = sp.simplify(coeff * inner_result)
-        steps.append(
-            f"Multiplicando por la constante, obtenemos:"
-        )
+        steps.append("Multiplicando por la constante, obtenemos:")
         steps.append(
             f"$\\mathcal{{L}}\\{{{pretty_latex(expr)}\\}} = {pretty_latex(result)}$."
         )
@@ -359,12 +356,8 @@ def laplace_term_steps(expr):
 
     a, g = factor_exp_shift(expr)
     if a is not None and g != expr:
-        steps.append(
-            "Usamos la propiedad de corrimiento exponencial:"
-        )
-        steps.append(
-            r"$\mathcal{L}\{e^{at}f(t)\}=F(s-a)$."
-        )
+        steps.append("Usamos la propiedad de corrimiento exponencial:")
+        steps.append(r"$\mathcal{L}\{e^{at}f(t)\}=F(s-a)$.")
         steps.append(
             f"Aquí, $a={pretty_latex(a)}$ y la función base es $f(t)={pretty_latex(g)}$."
         )
@@ -374,9 +367,7 @@ def laplace_term_steps(expr):
         steps.append(
             f"Sustituimos $s \\mapsto s-{pretty_latex(a)}$ en la transformada obtenida."
         )
-        steps.append(
-            f"Por tanto,"
-        )
+        steps.append("Por tanto,")
         steps.append(
             f"$\\mathcal{{L}}\\{{{pretty_latex(expr)}\\}} = {pretty_latex(shifted)}$."
         )
@@ -403,9 +394,7 @@ def laplace_term_steps(expr):
         steps.append(
             f"$\\mathcal{{L}}\\{{t^{n}\\}} = \\dfrac{{n!}}{{s^{{n+1}}}}$, con $n={n}$."
         )
-        steps.append(
-            f"Entonces,"
-        )
+        steps.append("Entonces,")
         steps.append(
             f"$\\mathcal{{L}}\\{{{pretty_latex(expr)}\\}} = {pretty_latex(result)}$."
         )
@@ -417,15 +406,9 @@ def laplace_term_steps(expr):
         if arg == b * t and b.is_number:
             result = b / (s**2 + b**2)
             steps.append("Usamos la fórmula de la transformada del seno:")
-            steps.append(
-                r"$\mathcal{L}\{\sin(bt)\}=\dfrac{b}{s^2+b^2}$."
-            )
-            steps.append(
-                f"Aquí, $b={pretty_latex(b)}$."
-            )
-            steps.append(
-                f"Por tanto,"
-            )
+            steps.append(r"$\mathcal{L}\{\sin(bt)\}=\dfrac{b}{s^2+b^2}$.")
+            steps.append(f"Aquí, $b={pretty_latex(b)}$.")
+            steps.append("Por tanto,")
             steps.append(
                 f"$\\mathcal{{L}}\\{{{pretty_latex(expr)}\\}} = {pretty_latex(result)}$."
             )
@@ -437,15 +420,9 @@ def laplace_term_steps(expr):
         if arg == b * t and b.is_number:
             result = s / (s**2 + b**2)
             steps.append("Usamos la fórmula de la transformada del coseno:")
-            steps.append(
-                r"$\mathcal{L}\{\cos(bt)\}=\dfrac{s}{s^2+b^2}$."
-            )
-            steps.append(
-                f"Aquí, $b={pretty_latex(b)}$."
-            )
-            steps.append(
-                f"Por tanto,"
-            )
+            steps.append(r"$\mathcal{L}\{\cos(bt)\}=\dfrac{s}{s^2+b^2}$.")
+            steps.append(f"Aquí, $b={pretty_latex(b)}$.")
+            steps.append("Por tanto,")
             steps.append(
                 f"$\\mathcal{{L}}\\{{{pretty_latex(expr)}\\}} = {pretty_latex(result)}$."
             )
@@ -457,15 +434,9 @@ def laplace_term_steps(expr):
         if expo == a * t and a.is_number:
             result = 1 / (s - a)
             steps.append("Usamos la fórmula de la transformada exponencial:")
-            steps.append(
-                r"$\mathcal{L}\{e^{at}\}=\dfrac{1}{s-a}$."
-            )
-            steps.append(
-                f"Aquí, $a={pretty_latex(a)}$."
-            )
-            steps.append(
-                f"Entonces,"
-            )
+            steps.append(r"$\mathcal{L}\{e^{at}\}=\dfrac{1}{s-a}$.")
+            steps.append(f"Aquí, $a={pretty_latex(a)}$.")
+            steps.append("Entonces,")
             steps.append(
                 f"$\\mathcal{{L}}\\{{{pretty_latex(expr)}\\}} = {pretty_latex(result)}$."
             )
@@ -573,4 +544,5 @@ def solve():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
